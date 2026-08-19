@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { CSVMetadata, CSVRow } from "@/lib/types/csv";
-import { formatColumnName, formatCSVValue, toChartRows } from "@/lib/types/csv";
+import { formatColumnName, formatCSVValue, toChartRows } from "@/lib/utils/csv";
 
 type Kind = "line" | "bar" | "area" | "pie";
 const colors = [

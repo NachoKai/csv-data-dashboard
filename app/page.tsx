@@ -10,12 +10,9 @@ import { ChartViewer } from "@/components/ChartViewer";
 import { DataTable } from "@/components/DataTable";
 import { DatasetTabs } from "@/components/DatasetTabs";
 import { useIndexedDB } from "@/lib/hooks/useIndexedDB";
-import {
-  createWorkspaceDataset,
-  EMPTY_DATASET,
-  type Dataset,
-  type WorkspaceDataset,
-} from "@/lib/types/csv";
+import { DEFAULT_DATASET_NAME, EDITING_SENTINEL, EMPTY_DATASET } from "@/lib/constants/csv";
+import { createWorkspaceDataset } from "@/lib/utils/csv";
+import type { Dataset, WorkspaceDataset } from "@/lib/types/csv";
 
 export default function Page() {
   const storage = useIndexedDB();
@@ -73,7 +70,7 @@ export default function Page() {
       setDatasets(items =>
         items.map(item =>
           item.id === active.id
-            ? { ...item, name: fileName.replace(/\.csv$/i, "") || "Untitled CSV" }
+            ? { ...item, name: fileName.replace(/\.csv$/i, "") || DEFAULT_DATASET_NAME }
             : item,
         ),
       );
@@ -85,7 +82,7 @@ export default function Page() {
         item.id === id
           ? {
               ...item,
-              name: name === "__editing__" ? "__editing__" : name || "Untitled CSV",
+              name: name === EDITING_SENTINEL ? EDITING_SENTINEL : name || DEFAULT_DATASET_NAME,
               updatedAt: Date.now(),
             }
           : item,
@@ -167,7 +164,7 @@ export default function Page() {
           <Badge variant="default" className="size-2 rounded-full p-0" />
           Editing{" "}
           <strong className="text-foreground">
-            {active.name === "__editing__" ? "Untitled CSV" : active.name}
+            {active.name === EDITING_SENTINEL ? DEFAULT_DATASET_NAME : active.name}
           </strong>
         </div>
         <div className="grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">

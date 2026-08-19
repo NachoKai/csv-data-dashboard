@@ -22,12 +22,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import {
-  formatColumnName,
-  formatCSVValue,
-  type CSVMetadata,
-  type CSVRow,
-} from "@/lib/types/csv";
+import type { CSVMetadata, CSVRow } from "@/lib/types/csv";
+import { formatColumnName, formatCSVValue } from "@/lib/utils/csv";
 
 export function DataTable({
   rows,

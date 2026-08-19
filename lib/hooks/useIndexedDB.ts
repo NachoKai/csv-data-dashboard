@@ -1,7 +1,8 @@
 "use client";
 
 import { get, set } from "idb-keyval";
-import { datasetFromLegacy, type WorkspaceDataset } from "@/lib/types/csv";
+import type { WorkspaceDataset } from "@/lib/types/csv";
+import { datasetFromLegacy } from "@/lib/utils/csv";
 
 const KEY = "csvWorkspace:v2";
 const LEGACY_KEY = "csvDataset";

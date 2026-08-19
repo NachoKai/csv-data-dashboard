@@ -15,7 +15,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertAction, AlertDescription } from "@/components/ui/alert";
 import type { Dataset } from "@/lib/types/csv";
-import { SAMPLE_CSV } from "@/lib/types/csv";
+import { SAMPLE_CSV } from "@/lib/constants/csv";
 import { parseCsv } from "@/lib/hooks/useCsvParser";
 
 export function CsvInput({ onParsed }: { onParsed: (dataset: Dataset) => void }) {

@@ -1,4 +1,4 @@
-import { inferMetadata } from '@/lib/types/csv'
+import { inferMetadata } from '@/lib/utils/csv'
 import { parseCsv } from '@/lib/hooks/useCsvParser'
 
 export async function POST(request: Request) {
