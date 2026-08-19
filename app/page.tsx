@@ -10,7 +10,11 @@ import { ChartViewer } from "@/components/ChartViewer";
 import { DataTable } from "@/components/DataTable";
 import { DatasetTabs } from "@/components/DatasetTabs";
 import { useIndexedDB } from "@/lib/hooks/useIndexedDB";
-import { DEFAULT_DATASET_NAME, EDITING_SENTINEL, EMPTY_DATASET } from "@/lib/constants/csv";
+import {
+  DEFAULT_DATASET_NAME,
+  EDITING_SENTINEL,
+  EMPTY_DATASET,
+} from "@/lib/constants/csv";
 import { createWorkspaceDataset, inferMetadata, toRawCsv } from "@/lib/utils/csv";
 import type { Dataset, WorkspaceDataset } from "@/lib/types/csv";
 
@@ -99,7 +103,10 @@ export default function Page() {
         item.id === id
           ? {
               ...item,
-              name: name === EDITING_SENTINEL ? EDITING_SENTINEL : name || DEFAULT_DATASET_NAME,
+              name:
+                name === EDITING_SENTINEL
+                  ? EDITING_SENTINEL
+                  : name || DEFAULT_DATASET_NAME,
               updatedAt: Date.now(),
             }
           : item,
@@ -122,16 +129,13 @@ export default function Page() {
 
   return (
     <main className="min-h-screen bg-background">
-
       <div className="mx-auto max-w-360 px-5 py-8 lg:px-8">
         <div className="mb-5 flex flex-col justify-between gap-5 md:flex-row md:items-end">
           <div>
             <Badge variant="secondary" className="mb-2">
               Data, made legible
             </Badge>
-            <h1 className="max-w-2xl text-balance font-mono text-3xl font-bold tracking-tight md:text-5xl">
-              See the shape of your CSV.
-            </h1>
+
             <p className="mt-3 max-w-xl text-pretty leading-6 text-muted-foreground">
               Keep separate datasets in their own tabs, then paste, chart, edit, and
               export without leaving your browser.
