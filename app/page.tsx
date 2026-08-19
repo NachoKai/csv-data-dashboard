@@ -11,7 +11,7 @@ import { DataTable } from "@/components/DataTable";
 import { DatasetTabs } from "@/components/DatasetTabs";
 import { useIndexedDB } from "@/lib/hooks/useIndexedDB";
 import { DEFAULT_DATASET_NAME, EDITING_SENTINEL, EMPTY_DATASET } from "@/lib/constants/csv";
-import { createWorkspaceDataset } from "@/lib/utils/csv";
+import { createWorkspaceDataset, inferMetadata } from "@/lib/utils/csv";
 import type { Dataset, WorkspaceDataset } from "@/lib/types/csv";
 
 export default function Page() {
@@ -22,8 +22,14 @@ export default function Page() {
 
   useEffect(() => {
     storage.load().then(saved => {
-      setDatasets(saved);
-      setActiveId(saved[0]?.id ?? "");
+      // Re-infer metadata so updated detection logic (e.g. new date patterns)
+      // takes effect for data saved before the change.
+      const refreshed = saved.map(ds => ({
+        ...ds,
+        metadata: ds.rows.length ? inferMetadata(ds.rows) : ds.metadata,
+      }));
+      setDatasets(refreshed);
+      setActiveId(refreshed[0]?.id ?? "");
       setLoaded(true);
     });
   }, []);

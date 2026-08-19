@@ -298,6 +298,65 @@ describe("toChartRows", () => {
     // label should use first 2 non-empty numeric values joined by ' · '
     expect(chartData[0].label).toBe("100 · 10");
   });
+
+  it("sorts rows by date (DD/MM/YYYY) when dateColumn is set", () => {
+    const dateRows = [
+      { "Fecha pago": "22/07/2026", Monto: "40145" },
+      { "Fecha pago": "19/12/2025", Monto: "25894" },
+      { "Fecha pago": "19/03/2026", Monto: "43657" },
+      { "Fecha pago": "19/01/2026", Monto: "47059" },
+      { "Fecha pago": "18/08/2025", Monto: "34105" },
+    ];
+    const meta = {
+      columns: ["Fecha pago", "Monto"],
+      dateColumn: "Fecha pago",
+      numericColumns: ["Monto"],
+    };
+    const chartData = toChartRows(dateRows, meta);
+    // Should be sorted oldest → newest
+    expect(chartData.map((r) => r.label)).toEqual([
+      "18/08/2025",
+      "19/12/2025",
+      "19/01/2026",
+      "19/03/2026",
+      "22/07/2026",
+    ]);
+  });
+
+  it("sorts rows by date (YYYY-MM-DD) when dateColumn is set", () => {
+    const dateRows = [
+      { date: "2026-03-01", val: "10" },
+      { date: "2025-12-01", val: "20" },
+      { date: "2026-01-01", val: "30" },
+    ];
+    const meta = {
+      columns: ["date", "val"],
+      dateColumn: "date",
+      numericColumns: ["val"],
+    };
+    const chartData = toChartRows(dateRows, meta);
+    expect(chartData.map((r) => r.label)).toEqual([
+      "2025-12-01",
+      "2026-01-01",
+      "2026-03-01",
+    ]);
+  });
+
+  it("does not sort when no dateColumn is set", () => {
+    const rows2 = [
+      { product: "C", revenue: "300" },
+      { product: "A", revenue: "100" },
+      { product: "B", revenue: "200" },
+    ];
+    const meta = {
+      columns: ["product", "revenue"],
+      dateColumn: null,
+      numericColumns: ["revenue"],
+    };
+    const chartData = toChartRows(rows2, meta);
+    // Original order preserved (fallback label, no date sort)
+    expect(chartData.map((r) => r.label)).toEqual(["C", "A", "B"]);
+  });
 });
 
 // ---------------------------------------------------------------------------

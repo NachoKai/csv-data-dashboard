@@ -25,6 +25,20 @@ import { Separator } from "@/components/ui/separator";
 import type { CSVMetadata, CSVRow } from "@/lib/types/csv";
 import { formatColumnName, formatCSVValue } from "@/lib/utils/csv";
 
+/** Parse a date string into a sortable timestamp */
+function parseSortDate(dateStr: string): number {
+  const trimmed = dateStr.trim();
+  // DD/MM/YYYY
+  const dmy = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (dmy) return new Date(Number(dmy[3]), Number(dmy[2]) - 1, Number(dmy[1])).getTime();
+  // YYYY-MM-DD
+  const ymd = trimmed.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (ymd) return new Date(Number(ymd[1]), Number(ymd[2]) - 1, Number(ymd[3])).getTime();
+  // Fallback: try native parsing
+  const d = new Date(trimmed);
+  return isNaN(d.getTime()) ? 0 : d.getTime();
+}
+
 export function DataTable({
   rows,
   metadata,
@@ -44,24 +58,33 @@ export function DataTable({
   const visibleRows = useMemo(() => {
     if (!sort) return rows.map((row, index) => ({ row, index }));
     const numeric = metadata.numericColumns.includes(sort.column);
+    const isDate = sort.column === metadata.dateColumn;
     return rows
       .map((row, index) => ({ row, index }))
       .sort((a, b) => {
         const left = a.row[sort.column];
         const right = b.row[sort.column];
-        const comparison = numeric
-          ? Number(left) - Number(right)
-          : String(left ?? "").localeCompare(String(right ?? ""), "es-AR", {
+        let comparison: number;
+        if (numeric) {
+          comparison = Number(left) - Number(right);
+        } else if (isDate) {
+          // Parse DD/MM/YYYY or YYYY-MM-DD for chronological sort
+          const dl = parseSortDate(String(left ?? ""));
+          const dr = parseSortDate(String(right ?? ""));
+          comparison = dl - dr;
+        } else {
+          comparison = String(left ?? "").localeCompare(String(right ?? ""), "es-AR", {
               numeric: true,
               sensitivity: "base",
             });
+        }
         return comparison === 0
           ? a.index - b.index
           : sort.direction === "asc"
             ? comparison
             : -comparison;
       });
-  }, [rows, metadata.numericColumns, sort]);
+  }, [rows, metadata.numericColumns, metadata.dateColumn, sort]);
 
   const toggleSort = (column: string) =>
     setSort(current =>
