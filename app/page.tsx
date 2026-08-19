@@ -2,6 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Database, FileSpreadsheet, Rows3, Sparkles } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { CsvInput } from "@/components/CsvInput";
 import { ChartViewer } from "@/components/ChartViewer";
 import { DataTable } from "@/components/DataTable";
@@ -113,21 +116,23 @@ export default function Page() {
             </div>
             <div>
               <p className="font-mono text-sm font-bold tracking-tight">tabular</p>
-              <p className="text-2.75 text-muted-foreground">CSV data workbench</p>
+              <p className="text-xs text-muted-foreground">CSV data workbench</p>
             </div>
           </div>
-          <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex">
-            <span className="size-2 rounded-full bg-chart-2" />
-            Local-first workspace
+          <div className="hidden items-center gap-2 sm:flex">
+            <Badge variant="secondary">
+              <span className="size-1.5 rounded-full bg-chart-2" />
+              Local-first workspace
+            </Badge>
           </div>
         </div>
       </header>
       <div className="mx-auto max-w-360 px-5 py-8 lg:px-8">
         <div className="mb-5 flex flex-col justify-between gap-5 md:flex-row md:items-end">
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+            <Badge variant="secondary" className="mb-2">
               Data, made legible
-            </p>
+            </Badge>
             <h1 className="max-w-2xl text-balance font-mono text-3xl font-bold tracking-tight md:text-5xl">
               See the shape of your CSV.
             </h1>
@@ -138,13 +143,15 @@ export default function Page() {
           </div>
           <div className="flex gap-2">
             {stats.map(({ label, value, icon: Icon }) => (
-              <div key={label} className="rounded-xl border bg-card px-4 py-3">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Icon className="size-3.5" />
-                  <span className="text-2.75 uppercase tracking-wider">{label}</span>
-                </div>
-                <p className="mt-1 font-mono text-xl font-semibold">{value}</p>
-              </div>
+              <Card key={label} className="px-4 py-3">
+                <CardContent className="p-0">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Icon className="size-3.5" />
+                    <span className="text-xs uppercase tracking-wider">{label}</span>
+                  </div>
+                  <p className="mt-1 font-mono text-xl font-semibold">{value}</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
@@ -157,7 +164,7 @@ export default function Page() {
           onDelete={remove}
         />
         <div className="mb-5 flex items-center gap-2 text-sm text-muted-foreground">
-          <span className="size-2 rounded-full bg-primary" />
+          <Badge variant="default" className="size-2 rounded-full p-0" />
           Editing{" "}
           <strong className="text-foreground">
             {active.name === "__editing__" ? "Untitled CSV" : active.name}
@@ -171,13 +178,12 @@ export default function Page() {
             datasetName={active.name}
           />
         </div>
-        <div className="mt-5">
-          <DataTable
-            rows={dataset.rows}
-            metadata={dataset.metadata}
-            onChange={rows => updateActive({ ...dataset, rows })}
-          />
-        </div>
+        <Separator className="my-5" />
+        <DataTable
+          rows={dataset.rows}
+          metadata={dataset.metadata}
+          onChange={rows => updateActive({ ...dataset, rows })}
+        />
       </div>
     </main>
   );

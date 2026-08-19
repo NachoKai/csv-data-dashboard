@@ -3,6 +3,8 @@
 import * as React from "react";
 import { Check, FileSpreadsheet, Pencil, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import type { WorkspaceDataset } from "@/lib/types/csv";
 
 type Props = {
@@ -23,10 +25,7 @@ export function DatasetTabs({
   onDelete,
 }: Props) {
   return (
-    <section
-      aria-label="CSV datasets"
-      className="mb-6 rounded-2xl border bg-card p-2 shadow-sm"
-    >
+    <Card aria-label="CSV datasets" className="mb-6 p-2">
       <div className="flex items-center gap-2 overflow-x-auto">
         <div
           role="tablist"
@@ -49,7 +48,7 @@ export function DatasetTabs({
           New CSV
         </Button>
       </div>
-    </section>
+    </Card>
   );
 }
 
@@ -78,7 +77,7 @@ function DatasetTab({
       >
         <FileSpreadsheet className="size-4 shrink-0 text-primary" />
         <span className="truncate text-sm font-medium">{dataset.name}</span>
-        <span className="shrink-0 text-2.75 text-muted-foreground">
+        <span className="shrink-0 text-xs text-muted-foreground">
           {dataset.rows.length}
         </span>
       </button>
@@ -114,11 +113,11 @@ function RenameButton({
           setEditing(false);
         }}
       >
-        <input
+        <Input
           autoFocus
           name="name"
           defaultValue={name}
-          className="h-7 w-28 rounded-md border bg-background px-2 text-xs outline-none focus:ring-2 focus:ring-ring"
+          className="h-7 w-28 text-xs"
           aria-label="Dataset name"
         />
         <Button type="submit" size="icon-xs" variant="ghost" aria-label="Save name">

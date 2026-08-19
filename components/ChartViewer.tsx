@@ -20,6 +20,8 @@ import {
   YAxis,
 } from "recharts";
 import { Button } from "@/components/ui/button";
+import { Card, CardAction, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { CSVMetadata, CSVRow } from "@/lib/types/csv";
 import { formatColumnName, formatCSVValue, toChartRows } from "@/lib/types/csv";
 
@@ -41,7 +43,7 @@ export function ChartViewer({
   metadata: CSVMetadata;
   datasetName?: string;
 }) {
-  const [kind, setKind] = useState<Kind>("line");
+  const [kind, setKind] = useState<Kind[]>(["line"]);
   const [hidden, setHidden] = useState<string[]>([]);
   const ref = useRef<HTMLDivElement>(null);
   const data = toChartRows(rows, metadata);
@@ -59,114 +61,117 @@ export function ChartViewer({
     link.click();
   }
   return (
-    <section className="flex min-h-127.5 flex-col rounded-2xl border bg-card p-5 shadow-sm">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <Card className="flex min-h-127.5 flex-col">
+      <CardHeader>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            Signal view
-          </p>
-          <h2 className="mt-1 font-mono text-lg font-semibold">Patterns over time</h2>
+          <CardDescription>Signal view</CardDescription>
+          <CardTitle className="mt-1 font-mono">Patterns over time</CardTitle>
         </div>
-        <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" onClick={download}>
-            <Download data-icon="inline-start" />
-            PNG
-          </Button>
-          <div className="flex gap-1 rounded-lg border p-1">
-            {(["line", "area", "bar", "pie"] as Kind[]).map(item => (
-              <button
-                key={item}
-                onClick={() => setKind(item)}
-                className={`rounded-md px-2.5 py-1.5 text-xs capitalize ${kind === item ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
-              >
-                {item}
-              </button>
-            ))}
+        <CardAction>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={download}>
+              <Download data-icon="inline-start" />
+              PNG
+            </Button>
+            <ToggleGroup
+              value={kind}
+              onValueChange={value => { if (value.length) setKind([value[value.length - 1]] as Kind[]); }}
+              variant="outline"
+              size="sm"
+            >
+              {(["line", "area", "bar", "pie"] as Kind[]).map(item => (
+                <ToggleGroupItem key={item} value={item} className="capitalize">
+                  {item}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
           </div>
-        </div>
-      </div>
-      {!metadata.numericColumns.length ? (
-        <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-          Add a numeric column to visualize your data.
-        </div>
-      ) : (
-        <div ref={ref} className="mt-5 min-h-80 flex-1 rounded-xl bg-muted/30 p-2 pt-5">
-          <ResponsiveContainer width="100%" height={350}>
-            {kind === "pie" ? (
-              <PieChart>
-                <Tooltip />
-                <Legend />
-                <Pie
-                  data={data}
-                  dataKey={metadata.numericColumns[0]}
-                  nameKey="label"
-                  outerRadius={125}
-                >
-                  {data.map((_, index) => (
-                    <Cell key={index} fill={colors[index % colors.length]} />
-                  ))}
-                </Pie>
-              </PieChart>
-            ) : kind === "bar" ? (
-              <BarChart data={data}>
-                <ChartFrame />
-                <Legend />
-                {metadata.numericColumns.map(
-                  (key, i) =>
-                    !hidden.includes(key) && (
-                      <Bar
-                        key={key}
-                        dataKey={key}
-                        name={formatColumnName(key)}
-                        fill={colors[i % colors.length]}
-                        radius={[4, 4, 0, 0]}
-                      />
-                    ),
-                )}
-              </BarChart>
-            ) : kind === "area" ? (
-              <AreaChart data={data}>
-                <ChartFrame />
-                <Legend onClick={e => toggle(String(e.dataKey))} />
-                {metadata.numericColumns.map(
-                  (key, i) =>
-                    !hidden.includes(key) && (
-                      <Area
-                        key={key}
-                        type="monotone"
-                        dataKey={key}
-                        name={formatColumnName(key)}
-                        stroke={colors[i % colors.length]}
-                        fill={colors[i % colors.length]}
-                        fillOpacity={0.18}
-                      />
-                    ),
-                )}
-              </AreaChart>
-            ) : (
-              <LineChart data={data}>
-                <ChartFrame />
-                <Legend onClick={e => toggle(String(e.dataKey))} />
-                {metadata.numericColumns.map(
-                  (key, i) =>
-                    !hidden.includes(key) && (
-                      <Line
-                        key={key}
-                        type="monotone"
-                        dataKey={key}
-                        name={formatColumnName(key)}
-                        stroke={colors[i % colors.length]}
-                        strokeWidth={2.5}
-                        dot={false}
-                      />
-                    ),
-                )}
-              </LineChart>
-            )}
-          </ResponsiveContainer>
-        </div>
-      )}
-    </section>
+        </CardAction>
+      </CardHeader>
+      <CardContent className="flex flex-1 flex-col">
+        {!metadata.numericColumns.length ? (
+          <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+            Add a numeric column to visualize your data.
+          </div>
+        ) : (
+          <div ref={ref} className="min-h-80 flex-1 rounded-xl bg-muted/30 p-2 pt-5">
+            <ResponsiveContainer width="100%" height={350}>
+              {kind[0] === "pie" ? (
+                <PieChart>
+                  <Tooltip />
+                  <Legend />
+                  <Pie
+                    data={data}
+                    dataKey={metadata.numericColumns[0]}
+                    nameKey="label"
+                    outerRadius={125}
+                  >
+                    {data.map((_, index) => (
+                      <Cell key={index} fill={colors[index % colors.length]} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              ) : kind[0] === "bar" ? (
+                <BarChart data={data}>
+                  <ChartFrame />
+                  <Legend />
+                  {metadata.numericColumns.map(
+                    (key, i) =>
+                      !hidden.includes(key) && (
+                        <Bar
+                          key={key}
+                          dataKey={key}
+                          name={formatColumnName(key)}
+                          fill={colors[i % colors.length]}
+                          radius={[4, 4, 0, 0]}
+                        />
+                      ),
+                  )}
+                </BarChart>
+              ) : kind[0] === "area" ? (
+                <AreaChart data={data}>
+                  <ChartFrame />
+                  <Legend onClick={e => toggle(String(e.dataKey))} />
+                  {metadata.numericColumns.map(
+                    (key, i) =>
+                      !hidden.includes(key) && (
+                        <Area
+                          key={key}
+                          type="monotone"
+                          dataKey={key}
+                          name={formatColumnName(key)}
+                          stroke={colors[i % colors.length]}
+                          fill={colors[i % colors.length]}
+                          fillOpacity={0.18}
+                        />
+                      ),
+                  )}
+                </AreaChart>
+              ) : (
+                <LineChart data={data}>
+                  <ChartFrame />
+                  <Legend onClick={e => toggle(String(e.dataKey))} />
+                  {metadata.numericColumns.map(
+                    (key, i) =>
+                      !hidden.includes(key) && (
+                        <Line
+                          key={key}
+                          type="monotone"
+                          dataKey={key}
+                          name={formatColumnName(key)}
+                          stroke={colors[i % colors.length]}
+                          strokeWidth={2.5}
+                          dot={false}
+                        />
+                      ),
+                  )}
+                </LineChart>
+              )}
+            </ResponsiveContainer>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 function ChartFrame() {
