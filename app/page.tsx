@@ -11,7 +11,7 @@ import { DataTable } from "@/components/DataTable";
 import { DatasetTabs } from "@/components/DatasetTabs";
 import { useIndexedDB } from "@/lib/hooks/useIndexedDB";
 import { DEFAULT_DATASET_NAME, EDITING_SENTINEL, EMPTY_DATASET } from "@/lib/constants/csv";
-import { createWorkspaceDataset, inferMetadata } from "@/lib/utils/csv";
+import { createWorkspaceDataset, inferMetadata, toRawCsv } from "@/lib/utils/csv";
 import type { Dataset, WorkspaceDataset } from "@/lib/types/csv";
 
 export default function Page() {
@@ -50,6 +50,17 @@ export default function Page() {
         item.id === active.id ? { ...item, ...next, updatedAt: Date.now() } : item,
       ),
     );
+
+  function removeColumn(column: string) {
+    const filteredRows = dataset.rows.map(row => {
+      const { [column]: _, ...rest } = row;
+      return rest;
+    });
+    const newMetadata = filteredRows.length
+      ? inferMetadata(filteredRows)
+      : { columns: [], dateColumn: null, numericColumns: [] };
+    updateActive({ rows: filteredRows, metadata: newMetadata });
+  }
 
   const stats = useMemo(
     () => [
@@ -161,6 +172,7 @@ export default function Page() {
             rows={dataset.rows}
             metadata={dataset.metadata}
             datasetName={active.name}
+            rawCsv={active.rawCsv ?? toRawCsv(dataset.rows, dataset.metadata)}
           />
         </div>
         <Separator className="my-5" />
@@ -168,6 +180,7 @@ export default function Page() {
           rows={dataset.rows}
           metadata={dataset.metadata}
           onChange={rows => updateActive({ ...dataset, rows })}
+          onRemoveColumn={removeColumn}
         />
       </div>
     </main>

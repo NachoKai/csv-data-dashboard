@@ -16,7 +16,7 @@ export function parseCsv(csvText: string): Dataset {
 
   if (!rows.length || !Object.keys(rows[0]).length)
     throw new Error("Your CSV needs a header row and at least one data row.");
-  return { rows, metadata: inferMetadata(rows) };
+  return { rows, metadata: inferMetadata(rows), rawCsv: csvText };
 }
 
 export function useCsvParser() {

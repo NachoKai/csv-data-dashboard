@@ -29,7 +29,7 @@ export function CsvInput({ onParsed }: { onParsed: (dataset: Dataset) => void })
     try {
       setError("");
       const dataset = parseCsv(value);
-      onParsed(dataset);
+      onParsed({ ...dataset, rawCsv: value });
       setText("");
       if (inputRef.current) inputRef.current.value = "";
       setSuccess(

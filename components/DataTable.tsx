@@ -43,10 +43,12 @@ export function DataTable({
   rows,
   metadata,
   onChange,
+  onRemoveColumn,
 }: {
   rows: CSVRow[];
   metadata: CSVMetadata;
   onChange: (rows: CSVRow[]) => void;
+  onRemoveColumn?: (column: string) => void;
 }) {
   const [editing, setEditing] = useState<number | null>(null);
   const [draft, setDraft] = useState<CSVRow>({});
@@ -141,21 +143,34 @@ export function DataTable({
               <tr>
                 {metadata.columns.map(c => (
                   <th key={c} className="px-4 py-3 font-medium">
-                    <button
-                      className="inline-flex items-center gap-1.5 hover:text-foreground"
-                      onClick={() => toggleSort(c)}
-                    >
-                      {formatColumnName(c)}
-                      {sort?.column === c ? (
-                        sort.direction === "asc" ? (
-                          <ArrowUp />
+                    <div className="inline-flex items-center gap-1">
+                      <button
+                        className="inline-flex items-center gap-1.5 hover:text-foreground"
+                        onClick={() => toggleSort(c)}
+                      >
+                        {formatColumnName(c)}
+                        {sort?.column === c ? (
+                          sort.direction === "asc" ? (
+                            <ArrowUp />
+                          ) : (
+                            <ArrowDown />
+                          )
                         ) : (
-                          <ArrowDown />
-                        )
-                      ) : (
-                        <ChevronsUpDown />
+                          <ChevronsUpDown />
+                        )}
+                      </button>
+                      {onRemoveColumn && metadata.columns.length > 1 && (
+                        <Button
+                          size="icon-xs"
+                          variant="ghost"
+                          onClick={() => onRemoveColumn(c)}
+                          aria-label={`Remove column ${formatColumnName(c)}`}
+                          className="text-muted-foreground hover:text-destructive"
+                        >
+                          <X />
+                        </Button>
                       )}
-                    </button>
+                    </div>
                   </th>
                 ))}
                 <th className="px-4 py-3">Actions</th>

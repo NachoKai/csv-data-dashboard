@@ -7,7 +7,7 @@ export type CSVMetadata = {
   numericColumns: string[];
 };
 
-export type Dataset = { rows: CSVRow[]; metadata: CSVMetadata };
+export type Dataset = { rows: CSVRow[]; metadata: CSVMetadata; rawCsv?: string };
 
 export type WorkspaceDataset = Dataset & {
   id: string;

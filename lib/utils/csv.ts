@@ -44,6 +44,20 @@ export function createWorkspaceDataset(
   };
 }
 
+/** Reconstruct raw CSV text from rows and metadata */
+export function toRawCsv(rows: CSVRow[], metadata: CSVMetadata): string {
+  if (!metadata.columns.length) return "";
+  const escape = (val: CSVValue | undefined) => {
+    const s = String(val ?? "");
+    return s.includes(",") || s.includes('"') || s.includes("\n")
+      ? `"${s.replace(/"/g, '""')}` + '"'
+      : s;
+  };
+  const header = metadata.columns.map(escape).join(",");
+  const body = rows.map(row => metadata.columns.map(c => escape(row[c])).join(",")).join("\n");
+  return `${header}\n${body}`;
+}
+
 /** Infer column metadata (numeric, date) from a set of CSV rows */
 export function inferMetadata(rows: CSVRow[]): CSVMetadata {
   const columns = rows.length ? Object.keys(rows[0]) : [];

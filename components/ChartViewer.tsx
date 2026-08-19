@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Download } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { Copy, Download, X } from "lucide-react";
 import {
   Area,
   AreaChart,
@@ -23,9 +23,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { CSVMetadata, CSVRow } from "@/lib/types/csv";
-import { formatColumnName, formatCSVValue, toChartRows } from "@/lib/utils/csv";
+import { formatColumnName, formatCSVValue, toRawCsv } from "@/lib/utils/csv";
 
-type Kind = "line" | "bar" | "area" | "pie";
+type Kind = "line" | "bar" | "area" | "pie" | "raw";
 const colors = [
   "var(--chart-1)",
   "var(--chart-2)",
@@ -67,15 +67,70 @@ export function ChartViewer({
   rows,
   metadata,
   datasetName = "csv",
+  rawCsv,
 }: {
   rows: CSVRow[];
   metadata: CSVMetadata;
   datasetName?: string;
+  rawCsv?: string;
 }) {
   const [kind, setKind] = useState<Kind[]>(["line"]);
   const [hidden, setHidden] = useState<string[]>([]);
   const ref = useRef<HTMLDivElement>(null);
-  const data = toChartRows(rows, metadata);
+
+  // Axis selection state
+  const defaultXColumn =
+    metadata.dateColumn ??
+    metadata.columns.find(c => !metadata.numericColumns.includes(c)) ??
+    metadata.columns[0] ??
+    "";
+  const [xColumn, setXColumn] = useState(defaultXColumn);
+  const [yColumns, setYColumns] = useState<string[]>([...metadata.numericColumns]);
+
+  // Reset selections when metadata changes
+  const prevMetadataRef = useRef(metadata);
+  if (prevMetadataRef.current !== metadata) {
+    prevMetadataRef.current = metadata;
+    const newX =
+      metadata.dateColumn ??
+      metadata.columns.find(c => !metadata.numericColumns.includes(c)) ??
+      metadata.columns[0] ??
+      "";
+    setXColumn(newX);
+    setYColumns([...metadata.numericColumns]);
+    setHidden([]);
+  }
+
+  // Available columns for each axis
+  const xOptions = metadata.columns;
+  const yOptions = metadata.numericColumns;
+
+  // Toggle a Y column on/off
+  const toggleY = (col: string) =>
+    setYColumns(items =>
+      items.includes(col) ? items.filter(c => c !== col) : [...items, col],
+    );
+
+  // Build chart data based on selected columns
+  const data = useMemo(() => {
+    const labelCol = xColumn || metadata.columns[0];
+    const isDateCol = labelCol === metadata.dateColumn;
+    const sortedRows = [...rows];
+    if (isDateCol) {
+      sortedRows.sort((a, b) => {
+        const da = new Date(String(a[labelCol] ?? "")).getTime();
+        const db = new Date(String(b[labelCol] ?? "")).getTime();
+        return (isNaN(da) ? 0 : da) - (isNaN(db) ? 0 : db);
+      });
+    }
+    return sortedRows.map((row, index) => ({
+      label: String(row[labelCol] ?? "").trim() || `Row ${index + 1}`,
+      ...Object.fromEntries(
+        yColumns.map(col => [col, Number(row[col]) || 0]),
+      ),
+    }));
+  }, [rows, metadata, xColumn, yColumns]);
+
   const toggle = (key: string) =>
     setHidden(items =>
       items.includes(key) ? items.filter(item => item !== key) : [...items, key],
@@ -108,7 +163,7 @@ export function ChartViewer({
               variant="outline"
               size="sm"
             >
-              {(["line", "area", "bar", "pie"] as Kind[]).map(item => (
+              {(["line", "area", "bar", "pie", "raw"] as Kind[]).map(item => (
                 <ToggleGroupItem key={item} value={item} className="capitalize">
                   {item}
                 </ToggleGroupItem>
@@ -118,9 +173,55 @@ export function ChartViewer({
         </CardAction>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col">
-        {!metadata.numericColumns.length ? (
+        {/* Axis selectors */}
+        <div className="mb-4 flex flex-col gap-3 rounded-lg border bg-muted/30 p-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              X axis
+            </span>
+            <div className="flex flex-wrap gap-1">
+              {xOptions.map(col => (
+                <Button
+                  key={col}
+                  size="xs"
+                  variant={xColumn === col ? "default" : "outline"}
+                  onClick={() => setXColumn(col)}
+                >
+                  {formatColumnName(col)}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Y axis
+            </span>
+            <div className="flex flex-wrap gap-1">
+              {yOptions.map(col => (
+                <Button
+                  key={col}
+                  size="xs"
+                  variant={yColumns.includes(col) ? "default" : "outline"}
+                  onClick={() => toggleY(col)}
+                >
+                  {formatColumnName(col)}
+                  {yColumns.includes(col) && (
+                    <X className="ml-1 size-3" />
+                  )}
+                </Button>
+              ))}
+              {!yOptions.length && (
+                <span className="text-xs text-muted-foreground">No numeric columns</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {kind[0] === "raw" ? (
+          <RawCsvView rawCsv={rawCsv ?? toRawCsv(rows, metadata)} />
+        ) : !yColumns.length ? (
           <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-            Add a numeric column to visualize your data.
+            Select at least one Y axis column to visualize.
           </div>
         ) : (
           <div ref={ref} className="min-h-80 flex-1 rounded-xl bg-muted/30 p-2 pt-5">
@@ -131,7 +232,7 @@ export function ChartViewer({
                   <Legend />
                   <Pie
                     data={data}
-                    dataKey={metadata.numericColumns[0]}
+                    dataKey={yColumns[0]}
                     nameKey="label"
                     outerRadius={125}
                   >
@@ -144,7 +245,7 @@ export function ChartViewer({
                 <BarChart data={data}>
                   <ChartFrame />
                   <Legend />
-                  {metadata.numericColumns.map(
+                  {yColumns.map(
                     (key, i) =>
                       !hidden.includes(key) && (
                         <Bar
@@ -161,7 +262,7 @@ export function ChartViewer({
                 <AreaChart data={data}>
                   <ChartFrame />
                   <Legend onClick={e => toggle(String(e.dataKey))} />
-                  {metadata.numericColumns.map(
+                  {yColumns.map(
                     (key, i) =>
                       !hidden.includes(key) && (
                         <Area
@@ -180,7 +281,7 @@ export function ChartViewer({
                 <LineChart data={data}>
                   <ChartFrame />
                   <Legend onClick={e => toggle(String(e.dataKey))} />
-                  {metadata.numericColumns.map(
+                  {yColumns.map(
                     (key, i) =>
                       !hidden.includes(key) && (
                         <Line
@@ -215,5 +316,34 @@ function ChartFrame() {
       />
       <Tooltip content={<ChartTooltip />} />
     </>
+  );
+}
+
+function RawCsvView({ rawCsv }: { rawCsv: string }) {
+  const [copied, setCopied] = useState(false);
+
+  async function copy() {
+    await navigator.clipboard.writeText(rawCsv);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  const lineCount = rawCsv.split("\n").length;
+
+  return (
+    <div className="flex flex-1 flex-col">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-xs text-muted-foreground">
+          {lineCount} lines · {rawCsv.length.toLocaleString()} chars
+        </span>
+        <Button size="xs" variant="outline" onClick={copy}>
+          <Copy data-icon="inline-start" />
+          {copied ? "Copied!" : "Copy"}
+        </Button>
+      </div>
+      <pre className="flex-1 overflow-auto rounded-xl bg-muted/30 p-4 font-mono text-xs leading-6">
+        {rawCsv}
+      </pre>
+    </div>
   );
 }
