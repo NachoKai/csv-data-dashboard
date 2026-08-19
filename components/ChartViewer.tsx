@@ -20,7 +20,14 @@ import {
   YAxis,
 } from "recharts";
 import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { CSVMetadata, CSVRow } from "@/lib/types/csv";
 import { formatColumnName, formatCSVValue, toRawCsv } from "@/lib/utils/csv";
@@ -125,9 +132,7 @@ export function ChartViewer({
     }
     return sortedRows.map((row, index) => ({
       label: String(row[labelCol] ?? "").trim() || `Row ${index + 1}`,
-      ...Object.fromEntries(
-        yColumns.map(col => [col, Number(row[col]) || 0]),
-      ),
+      ...Object.fromEntries(yColumns.map(col => [col, Number(row[col]) || 0])),
     }));
   }, [rows, metadata, xColumn, yColumns]);
 
@@ -148,8 +153,8 @@ export function ChartViewer({
     <Card className="flex min-h-127.5 flex-col">
       <CardHeader>
         <div>
-          <CardDescription>Signal view</CardDescription>
-          <CardTitle className="mt-1 font-mono">Patterns over time</CardTitle>
+          <CardDescription></CardDescription>
+          <CardTitle className="mt-1 font-mono"></CardTitle>
         </div>
         <CardAction>
           <div className="flex items-center gap-2">
@@ -159,7 +164,9 @@ export function ChartViewer({
             </Button>
             <ToggleGroup
               value={kind}
-              onValueChange={value => { if (value.length) setKind([value[value.length - 1]] as Kind[]); }}
+              onValueChange={value => {
+                if (value.length) setKind([value[value.length - 1]] as Kind[]);
+              }}
               variant="outline"
               size="sm"
             >
@@ -205,9 +212,7 @@ export function ChartViewer({
                   onClick={() => toggleY(col)}
                 >
                   {formatColumnName(col)}
-                  {yColumns.includes(col) && (
-                    <X className="ml-1 size-3" />
-                  )}
+                  {yColumns.includes(col) && <X className="ml-1 size-3" />}
                 </Button>
               ))}
               {!yOptions.length && (
