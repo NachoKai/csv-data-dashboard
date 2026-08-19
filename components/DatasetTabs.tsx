@@ -25,28 +25,28 @@ export function DatasetTabs({
   onDelete,
 }: Props) {
   return (
-    <Card aria-label="CSV datasets" className="mb-6 p-2">
-      <div className="flex items-center gap-2 overflow-x-auto">
-        <div
-          role="tablist"
-          aria-label="CSV datasets"
-          className="flex min-w-0 flex-1 items-center gap-1"
-        >
-          {datasets.map(dataset => (
-            <DatasetTab
-              key={dataset.id}
-              dataset={dataset}
-              active={dataset.id === activeId}
-              onSelect={() => onSelect(dataset.id)}
-              onRename={name => onRename(dataset.id, name)}
-              onDelete={() => onDelete(dataset.id)}
-            />
-          ))}
-        </div>
-        <Button size="sm" variant="outline" onClick={onNew} className="shrink-0">
+    <Card aria-label="CSV datasets" className="mb-6">
+      <div className="flex items-center justify-end border-b p-2">
+        <Button size="sm" variant="outline" onClick={onNew}>
           <Plus data-icon="inline-start" />
           New CSV
         </Button>
+      </div>
+      <div
+        role="tablist"
+        aria-label="CSV datasets"
+        className="flex min-w-0 items-center gap-1 overflow-x-auto p-2"
+      >
+        {datasets.map(dataset => (
+          <DatasetTab
+            key={dataset.id}
+            dataset={dataset}
+            active={dataset.id === activeId}
+            onSelect={() => onSelect(dataset.id)}
+            onRename={name => onRename(dataset.id, name)}
+            onDelete={() => onDelete(dataset.id)}
+          />
+        ))}
       </div>
     </Card>
   );
@@ -69,7 +69,7 @@ function DatasetTab({
     <div
       role="tab"
       aria-selected={active}
-      className={`group flex max-w-60 shrink-0 items-center gap-1 rounded-xl border px-2 py-1.5 transition ${active ? "border-primary/30 bg-primary/10" : "border-transparent hover:bg-muted"}`}
+      className={`group flex shrink-0 items-center gap-1 rounded-xl border px-2 py-1.5 transition ${active ? "border-primary/30 bg-primary/10" : "border-transparent hover:bg-muted"}`}
     >
       <button
         onClick={onSelect}
