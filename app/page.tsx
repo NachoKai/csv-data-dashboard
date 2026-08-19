@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Database, FileSpreadsheet, Rows3, Sparkles } from "lucide-react";
+import { Database, FileSpreadsheet, Rows3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -111,25 +111,7 @@ export default function Page() {
 
   return (
     <main className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="mx-auto flex max-w-360 items-center justify-between gap-4 px-5 py-4 lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">
-              <Sparkles className="size-4" />
-            </div>
-            <div>
-              <p className="font-mono text-sm font-bold tracking-tight">tabular</p>
-              <p className="text-xs text-muted-foreground">CSV data workbench</p>
-            </div>
-          </div>
-          <div className="hidden items-center gap-2 sm:flex">
-            <Badge variant="secondary">
-              <span className="size-1.5 rounded-full bg-chart-2" />
-              Local-first workspace
-            </Badge>
-          </div>
-        </div>
-      </header>
+
       <div className="mx-auto max-w-360 px-5 py-8 lg:px-8">
         <div className="mb-5 flex flex-col justify-between gap-5 md:flex-row md:items-end">
           <div>

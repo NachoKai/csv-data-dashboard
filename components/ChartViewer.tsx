@@ -34,6 +34,35 @@ const colors = [
   "var(--chart-5)",
 ];
 
+function ChartTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color: string }>;
+  label?: string;
+}) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-lg border bg-card px-3 py-2 text-sm shadow-md">
+      {label && <p className="mb-1 font-medium text-foreground">{label}</p>}
+      {payload.map((entry, i) => (
+        <div key={i} className="flex items-center gap-2">
+          <span
+            className="size-2 rounded-full"
+            style={{ backgroundColor: entry.color }}
+          />
+          <span className="text-muted-foreground">{entry.name}:</span>
+          <span className="font-medium text-foreground">
+            {formatCSVValue(entry.value, true)}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ChartViewer({
   rows,
   metadata,
@@ -98,7 +127,7 @@ export function ChartViewer({
             <ResponsiveContainer width="100%" height={350}>
               {kind[0] === "pie" ? (
                 <PieChart>
-                  <Tooltip />
+                  <Tooltip content={<ChartTooltip />} />
                   <Legend />
                   <Pie
                     data={data}
@@ -184,12 +213,7 @@ function ChartFrame() {
         axisLine={false}
         tickFormatter={value => formatCSVValue(value, true)}
       />
-      <Tooltip
-        formatter={(value, name) => [
-          formatCSVValue(value as number, true),
-          formatColumnName(String(name)),
-        ]}
-      />
+      <Tooltip content={<ChartTooltip />} />
     </>
   );
 }
